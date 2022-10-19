@@ -84,7 +84,7 @@ export function defineStore(options?: Options) {
         };
       });
 
-      const value = { ...options?.state, ...options?.actions };
+      const value = { ...state, ...options?.actions };
       // console.debug("value", value, options?.state, { ...options?.state });
 
       // 返回用户选择的 state 和 actions
@@ -99,12 +99,12 @@ export function defineStore(options?: Options) {
     patch(val: Object | Function) {
       if (typeof val === "object") {
         for (let k in val) {
-          options!.state![k] = (val as any)[k];
+          state![k] = (val as any)[k];
         }
       }
 
       if (typeof val === "function") {
-        val(options?.state);
+        val(state);
       }
     },
   };
