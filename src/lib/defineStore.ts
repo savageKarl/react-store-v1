@@ -1,11 +1,12 @@
-import { useLayoutEffect, useState, useReducer, useEffect } from "react";
+import { useLayoutEffect, useReducer, useEffect } from "react";
 
 import {
   installEventCenter,
-  isObject,
   hasChanged,
   get,
   deepClone,
+  isObject,
+  getSingle,
 } from "@savage181855/utils";
 
 type StateType = {
@@ -17,29 +18,67 @@ type Options = {
   actions?: {
     [key: string]: (...args: any) => unknown;
   };
+  computed?: {
+    [key: string]: (...args: any) => unknown;
+  };
 };
+
+type ComputedDep = {
+  [k: string]: {
+    name: string; // 计算属性名字
+    fn: () => unknown; // 计算属函数
+  }[];
+};
+
+// 定义全局属性，用于向dep传送计算属性函数
+var Dep: any = null;
 
 // 返回一个自定义钩子
 export function defineStore(options?: Options) {
   const eventCenter = installEventCenter({});
 
   let state = options?.state;
-  // 设置 proxy，发布消息
-  if (state) {
-    state = new Proxy(state, {
-      set(target, key, value, receiver) {
-        // console.debug("fuck");
+
+  let computed = options?.computed;
+
+  // 创建一个响应式对象
+  function createReactiveObject(target: any): any {
+    const deps = {} as ComputedDep;
+    const proxy = new Proxy(target, {
+      get(target: any, key: any, receiver: any) {
+        const res = Reflect.get(target, key, receiver);
+
+        //  这里收集计算属性依赖
+        if (Dep) deps[key]?.push(Dep) || (deps[key] = [Dep]);
+        // 深层代理对象的关键！！！判断这个属性是否是一个对象，是的话继续代理动作，使对象内部的值可追踪
+        if (isObject(res)) {
+          return createReactiveObject(res);
+        }
+        return res;
+      },
+      set(target: any, key: any, value: any, receiver: any) {
         // 这里先用深克隆吧，原因是state是引用类型，大量数据可能会有性能问题
         const oldState = deepClone(state!);
         const result = Reflect.set(target, key, value, receiver);
 
+        // 发布消息让计算属性更新
+        deps[key]?.forEach((item) => {
+          // 更新计算属性的值
+          for (let k in computed) {
+            computed[k] = item.fn() as any;
+          }
+          //  刷新使用计算属性的组件
+          eventCenter.subscribeList[item.name].forEach((fn) => fn());
+        });
+
         // console.debug(eventCenter.subscribeList)
-        Reflect.ownKeys(eventCenter.subscribeList).forEach((key) => {
-          const oldValue = get(oldState, key as string);
-          const value = get(state!, key as string);
+        // 发布消息让组件渲染或者监听器执行
+        Reflect.ownKeys(eventCenter.subscribeList).forEach((k) => {
+          const oldValue = get(oldState, k as string);
+          const value = get(state!, k as string);
 
           if (hasChanged(oldValue, value)) {
-            eventCenter.subscribeList[key as string].forEach((fn) =>
+            eventCenter.subscribeList[k as string].forEach((fn) =>
               fn(oldValue, value)
             );
           }
@@ -47,18 +86,32 @@ export function defineStore(options?: Options) {
         return result;
       },
     });
+    return proxy;
   }
 
-  // 给 actions里面的每一个函数自动注入 state参数
-  if (options?.actions) {
-    for (let k in options?.actions) {
-      options.actions[k] = options?.actions[k].bind(options, state);
+  // 设置 state proxy，发布消息
+  if (state) {
+    state = createReactiveObject(state);
+  }
+
+  if (computed) {
+    for (let k in computed) {
+      computed[k] = computed[k].bind(computed, state);
+      Dep = { name: k, fn: computed[k] };
+      //  先执行一下自己，state的属性才能收集自己作为依赖，然后再把自己变成返回的值，这样子，用户在导出计算属性就不用调用函数
+      computed[k] = computed[k]() as any;
+      Dep = null;
     }
   }
 
-  const watchCallbacks = {} as any;
+  // 给 actions里面的每一个函数自动注入 state参数
+  let actions = options?.actions;
+  if (actions) {
+    for (let k in actions) {
+      actions[k] = actions[k].bind(actions, state);
+    }
+  }
 
-  // 设置 proxy，发布消息
   const store = {
     /** 选择 state 和 actions 的 hooks */
     usePicker(seleted: string[]) {
@@ -68,7 +121,7 @@ export function defineStore(options?: Options) {
       const dataCallbacks = {} as any;
 
       useLayoutEffect(() => {
-        Reflect.ownKeys(options?.state!)
+        Reflect.ownKeys({ ...state, ...computed })
           .filter((key) => seleted.includes(key as string))
           .forEach((key) => {
             dataCallbacks[key] = function () {
@@ -84,9 +137,10 @@ export function defineStore(options?: Options) {
           );
           // console.debug("取消订阅");
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
-      const value = { ...state, ...options?.actions };
+      const value = { ...state, ...actions, ...computed };
       // console.debug("value", value, options?.state, { ...options?.state });
 
       // 返回用户选择的 state 和 actions
@@ -110,12 +164,13 @@ export function defineStore(options?: Options) {
       }
     },
     /** 监听 state里面的值 */
-    useWatch(key: string, fn: (oldVlaue: any, value: any) => unknown) {
+    useWatcher(key: string, fn: (oldVlaue: any, value: any) => unknown) {
       useEffect(() => {
         eventCenter.subscribe(key, fn);
         return () => {
           eventCenter.remove(key, fn as any);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
     },
   };
@@ -134,12 +189,6 @@ export function defineStore(options?: Options) {
   store.usePicker() 选择state和actions
   store.patch((state)=>{})
   // 监听state的值
-  store.useWatch('xxx,xxx', (oldValue, value) =>{})
-
-
-
-  
-  现在主要的难题是 如何收集依赖，将当前的组件和使用到 store.xxxx绑定在一起
-
+  store.useWatcher('xxx,xxx', (oldValue, value) =>{})
   
  */

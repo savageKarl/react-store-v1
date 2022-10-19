@@ -15,4 +15,10 @@ export const useStore = defineStore({
       state.name = "foo";
     },
   },
+  computed: {
+    dbCount(state) {
+      console.debug('计算属性 dbcount')
+      return state.count * 2;
+    }
+  }
 });

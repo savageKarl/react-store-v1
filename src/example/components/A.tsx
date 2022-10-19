@@ -6,7 +6,7 @@ function A() {
   const store = useStore();
   const { count } = store.usePicker(["count", "increment"]);
 
-  store.useWatch('name', (oldV, v) => {
+  store.useWatcher('name', (oldV, v) => {
     console.debug('name change', oldV, v);
   })
 

@@ -10,22 +10,19 @@ export function Count() {
     "increment",
     "changeName",
   ]);
-
+// console.debug(dbCount)
   console.debug("count rendered");
 
-
   function changeName2() {
-    store.patch({name: 'bar'});
+    store.patch({ name: "bar" });
   }
 
   function changeName3() {
-
-    store.patch((state) => state.name = 'shit');
-
+    store.patch((state) => (state.name = "shit"));
   }
-  store.useWatch('count', (oldV, v) => {
-    console.debug('count change', oldV, v);
-  })
+  store.useWatcher("count", (oldV, v) => {
+    console.debug("count change", oldV, v);
+  });
   return (
     <div>
       <h1>I'm the counter</h1>

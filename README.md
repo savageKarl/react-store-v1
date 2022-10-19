@@ -1,58 +1,57 @@
 # 项目描述
 
-react全局状态管理器
+> 简单、优雅的`React`全局状态管理器
 
-无论是redux还是react-redux，或者其他人封装的库，使用都太繁琐了，也不好用
+- **轻量**
+- **简单**
+- **高性能**
+- **灵活**
 
-首先是基本的react，使用action，reducer，state，分开维护，然后用 subscribe监听。
+## 安装
 
-react-redux，基于react进行封装，需要使用context和provide组件进行传store，然后组件导入在store定义的action，再用 useSelector 和 useDispatch 等api去获取值或者修改值。
+```
+npm install @savage181855/react-store
+```
+
+##  兼容性
+
+项目使用了ES6的`proxy`，仅支持主流浏览器，查看[详情](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy#%E6%B5%8F%E8%A7%88%E5%99%A8%E5%85%BC%E5%AE%B9%E6%80%A7)。
+
+## 快速使用
+
+定义个`useStore`hook 并导出
+```javascript
+import { defineStore } from "../lib/index";
+
+export const useStore = defineStore({
+  state: {
+    count: 10,
+    name: "savage",
+  },
+  actions: {
+    // 会自动传入 state
+    increment(state, payload) {
+      state.count += 1;
+    },
+    changeName(state) {
+      state.name = "foo";
+    },
+  },
+  computed: {
+    dbCount(state) {
+      return state.count * 2;
+    }
+  }
+});
+
+```
 
 
-这样子，使用太繁琐，也没必要，组件使用一个状态就要导入一堆的东西。
-
-
-如果直接用useState和useContext hooks，会导致一个context一变，整个app都会渲染，连memo也无效，没必要。
-
-
-为什么不学习pinia简单易用，直接用一个store就行，可以直接取值，可以直接调用action，可以监听，很完美。
-
-
-这里的设计，只有用到store的组件，才会响应store的变化。
-
-api的设置
-
-
-````
-defineStore 返回函数一个
-
-组件导入 usexxx函数
-
-然后 store = useXXX
-
-
-可以从 const  {xxx, yyy} = store;
-
-也可以 store.watch(xxxx, (oldValue, value) => {
-
-})
-
-````
-
-难点：
-
-不需要再app组件导入 context 的provide组件。
-
-只需要在使用 store的 组件进行响应更新。
-
-要记录当前的组件是哪一个让他强制 刷新
 
 
 ## 本地开发调试太烦了，
 
-
-
-示例和库分开放用  npm link 连接，还有库只能装react的类型提示，不能装react，否则示例就会报错，两个react依赖。
+示例和库分开放用 npm link 连接，还有库只能装 react 的类型提示，不能装 react，否则示例就会报错，两个 react 依赖。
 
 示例和库分开，库改动的代码，示例的声明文件解析跟不上，每次都要重新运行 start 脚本，要不然报错。
 

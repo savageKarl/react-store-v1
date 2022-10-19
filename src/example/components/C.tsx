@@ -3,12 +3,13 @@ import { useStore } from "../store";
 
 function C() {
   const store = useStore();
-  const { count } = store.usePicker(["count", "increment"]);
+  const { dbCount } = store.usePicker(['dbCount']);
   console.debug("C rendered");
   return (
     <div>
       <h2>I'm the C</h2>
-      <div>number：{count}</div>
+      <div>计算属性dbCount：{dbCount}</div>
+      <div>计算属性dbCount：{dbCount}</div>
     </div>
   );
 }

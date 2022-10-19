@@ -76,6 +76,6 @@
     ]
   },
   "dependencies": {
-    "@savage181855/utils": "^1.0.5"
+    "@savage181855/utils": "^1.0.7"
   }
 }
