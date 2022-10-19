@@ -1,6 +1,6 @@
 {
   "name": "@savage181855/react-store",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "react全局状态管理器，轻量，易用，高性能",
   "main": "dist/index.js",
   "files": [
