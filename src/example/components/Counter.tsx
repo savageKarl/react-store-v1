@@ -15,14 +15,17 @@ export function Count() {
 
 
   function changeName2() {
-    store.patch({name: 'bar'})
+    store.patch({name: 'bar'});
   }
 
   function changeName3() {
 
-    store.patch((state) => state.name = 'shit')
-  }
+    store.patch((state) => state.name = 'shit');
 
+  }
+  store.useWatch('count', (oldV, v) => {
+    console.debug('count change', oldV, v);
+  })
   return (
     <div>
       <h1>I'm the counter</h1>

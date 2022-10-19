@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, useReducer } from "react";
+import { useLayoutEffect, useState, useReducer, useEffect } from "react";
 
 import {
   installEventCenter,
@@ -56,6 +56,8 @@ export function defineStore(options?: Options) {
     }
   }
 
+  const watchCallbacks = {} as any;
+
   // 设置 proxy，发布消息
   const store = {
     /** 选择 state 和 actions 的 hooks */
@@ -82,7 +84,7 @@ export function defineStore(options?: Options) {
           );
           // console.debug("取消订阅");
         };
-      });
+      }, []);
 
       const value = { ...state, ...options?.actions };
       // console.debug("value", value, options?.state, { ...options?.state });
@@ -107,6 +109,15 @@ export function defineStore(options?: Options) {
         val(state);
       }
     },
+    /** 监听 state里面的值 */
+    useWatch(key: string, fn: (oldVlaue: any, value: any) => unknown) {
+      useEffect(() => {
+        eventCenter.subscribe(key, fn);
+        return () => {
+          eventCenter.remove(key, fn as any);
+        };
+      }, []);
+    },
   };
 
   return function () {
@@ -122,9 +133,10 @@ export function defineStore(options?: Options) {
 
   store.usePicker() 选择state和actions
   store.patch((state)=>{})
+  // 监听state的值
+  store.useWatch('xxx,xxx', (oldValue, value) =>{})
 
 
-  store.watch('xxx,xxx', (oldValue, value) =>{})
 
   
   现在主要的难题是 如何收集依赖，将当前的组件和使用到 store.xxxx绑定在一起
