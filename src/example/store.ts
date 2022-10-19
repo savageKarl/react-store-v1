@@ -2,7 +2,7 @@ import { defineStore } from "../lib/index";
 
 export const useStore = defineStore({
   state: {
-    count: 1,
+    count: 10,
     name: "savage",
   },
   actions: {
@@ -11,7 +11,8 @@ export const useStore = defineStore({
       state.count += 1;
       // console.debug(state, payload);
     },
-    changeNmae() {},
+    changeName(state) {
+      state.name = "foo";
+    },
   },
 });
-

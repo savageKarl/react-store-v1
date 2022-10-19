@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from "react";
+import { useLayoutEffect, useState, useReducer } from "react";
 
 import {
   installEventCenter,
@@ -23,19 +23,21 @@ type Options = {
 export function defineStore(options?: Options) {
   const eventCenter = installEventCenter({});
 
+  let state = options?.state;
   // 设置 proxy，发布消息
-  if (options?.state) {
-    options.state = new Proxy(options.state, {
+  if (state) {
+    state = new Proxy(state, {
       set(target, key, value, receiver) {
         // console.debug("fuck");
-        const oldState = deepClone(store);
+        // 这里先用深克隆吧，原因是state是引用类型，大量数据可能会有性能问题
+        const oldState = deepClone(state!);
         const result = Reflect.set(target, key, value, receiver);
 
         // console.debug(eventCenter.subscribeList)
-        eventCenter.subscribeList["count"][0]();
         Reflect.ownKeys(eventCenter.subscribeList).forEach((key) => {
           const oldValue = get(oldState, key as string);
-          const value = get(store, key as string);
+          const value = get(state!, key as string);
+
           if (hasChanged(oldValue, value)) {
             eventCenter.subscribeList[key as string].forEach((fn) =>
               fn(oldValue, value)
@@ -50,7 +52,7 @@ export function defineStore(options?: Options) {
   // 给 actions里面的每一个函数自动注入 state参数
   if (options?.actions) {
     for (let k in options?.actions) {
-      options.actions[k] = options?.actions[k].bind(options, options.state);
+      options.actions[k] = options?.actions[k].bind(options, state);
     }
   }
 
@@ -63,7 +65,7 @@ export function defineStore(options?: Options) {
 
       const dataCallbacks = {} as any;
 
-      useEffect(() => {
+      useLayoutEffect(() => {
         Reflect.ownKeys(options?.state!)
           .filter((key) => seleted.includes(key as string))
           .forEach((key) => {
@@ -84,7 +86,7 @@ export function defineStore(options?: Options) {
 
       const value = { ...options?.state, ...options?.actions };
       // console.debug("value", value, options?.state, { ...options?.state });
-      
+
       // 返回用户选择的 state 和 actions
       return Reflect.ownKeys(value)
         .filter((item) => seleted.includes(item as string))
@@ -115,7 +117,6 @@ export function defineStore(options?: Options) {
 /*
   api的设计，defineStore 定义返回一个 hooks，hooks执行返回 store
 
-  hooks里面会有进行订阅和取消订阅，以及会刷新，订阅的回调里面进行强制刷新
 
   store 的属性，state和actions的定义都会代理到 store上面。
 
