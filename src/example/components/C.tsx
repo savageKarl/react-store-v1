@@ -8,6 +8,7 @@ function C() {
   return (
     <div>
       <h2>I'm the C</h2>
+      
       <div>计算属性dbCount：{dbCount}</div>
       <div>计算属性dbCount：{dbCount}</div>
     </div>

@@ -6,7 +6,6 @@ import {
   get,
   deepClone,
   isObject,
-  getSingle,
 } from "@savage181855/utils";
 
 type StateType = {
@@ -50,7 +49,8 @@ export function defineStore(options?: Options) {
 
         //  这里收集计算属性依赖
         if (Dep) deps[key]?.push(Dep) || (deps[key] = [Dep]);
-        // 深层代理对象的关键！！！判断这个属性是否是一个对象，是的话继续代理动作，使对象内部的值可追踪
+
+        // 递归代理，因为proxy只能代理一层的数据
         if (isObject(res)) {
           return createReactiveObject(res);
         }

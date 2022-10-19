@@ -17,7 +17,7 @@ module.exports = {
     commonjs(), // 解析 commonjs规范的模块
     // 打包插件
     resolve(), // rollup导入语法只能导入本地文件，这里用于转换语法，告诉导入的是第三方库
-    // terser(), // 压缩代码和去除注释
+    terser(), // 压缩代码和去除注释
     ts({ // 解析 typescript
       tsconfig: path.resolve(__dirname, "tsconfig.json"),
       extensions: [".js", ".ts", ".tsx"], // 解析的扩展名

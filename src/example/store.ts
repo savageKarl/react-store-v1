@@ -17,7 +17,7 @@ export const useStore = defineStore({
   },
   computed: {
     dbCount(state) {
-      console.debug('计算属性 dbcount')
+      console.debug('计算属性 dbcount只会执行一次')
       return state.count * 2;
     }
   }
