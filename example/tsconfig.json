@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -11,10 +16,11 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "noEmit": true,
     "isolatedModules": true,
-    "declaration": true, // 生成定义文件
+    "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src/*"]
+  "include": [
+    "src"
+  ]
 }
