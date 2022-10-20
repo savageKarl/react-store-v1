@@ -8,9 +8,14 @@
     "readme.md"
   ],
   "keywords": [
-    "工具库",
-    "js工具库",
-    "utils"
+    "react-store",
+    "store",
+    "react-redux",
+    "全局状态管理器",
+    "react状态管理",
+    "react状态",
+    "状态管理",
+    "react状态管理器"
   ],
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.0",

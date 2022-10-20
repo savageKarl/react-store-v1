@@ -30,7 +30,7 @@ type ComputedDep = {
 };
 
 // 定义全局属性，用于向dep传送计算属性函数
-var Dep: any = null;
+let Dep: any = null;
 
 // 返回一个自定义钩子
 export function defineStore(options?: Options) {
@@ -38,7 +38,7 @@ export function defineStore(options?: Options) {
 
   let state = options?.state;
 
-  let computed = options?.computed;
+  const computed = options?.computed;
 
   // 创建一个响应式对象
   function createReactiveObject(target: any): any {
@@ -95,6 +95,7 @@ export function defineStore(options?: Options) {
   }
 
   if (computed) {
+    // 给 computed里面的每一个函数自动注入 state参数
     for (let k in computed) {
       computed[k] = computed[k].bind(computed, state);
       Dep = { name: k, fn: computed[k] };
@@ -104,9 +105,9 @@ export function defineStore(options?: Options) {
     }
   }
 
-  // 给 actions里面的每一个函数自动注入 state参数
-  let actions = options?.actions;
+  const actions = options?.actions;
   if (actions) {
+    // 给 actions里面的每一个函数自动注入 state参数
     for (let k in actions) {
       actions[k] = actions[k].bind(actions, state);
     }
@@ -179,16 +180,3 @@ export function defineStore(options?: Options) {
     return store;
   };
 }
-
-/*
-  api的设计，defineStore 定义返回一个 hooks，hooks执行返回 store
-
-
-  store 的属性，state和actions的定义都会代理到 store上面。
-
-  store.usePicker() 选择state和actions
-  store.patch((state)=>{})
-  // 监听state的值
-  store.useWatcher('xxx,xxx', (oldValue, value) =>{})
-  
- */

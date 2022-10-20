@@ -24,7 +24,7 @@ npm install @savage181855/react-store
 定义个`useStore`hook 并导出
 
 ```javascript
-import { defineStore } from "../lib/index";
+import { defineStore } from "@savage181855/react-store";
 
 export const useStore = defineStore({
   state: {
@@ -41,6 +41,7 @@ export const useStore = defineStore({
     },
   },
   computed: {
+    // 会自动传入 state
     dbCount(state) {
       return state.count * 2;
     },
@@ -57,7 +58,7 @@ import { useStore } from "../store";
 
 export function Count() {
   const store = useStore();
-  // 使用 usePicker hook 来导入在 defineStore 里面定义的 state, actions 和 computed计算属性等等
+  // 使用 usePicker hook 来导入在 defineStore 里面定义的 state, actions 和 computed
   const { count, increment, name, changeName, dbCount } = store.usePicker([
     "count",
     "name",
