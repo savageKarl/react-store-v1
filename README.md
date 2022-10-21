@@ -104,3 +104,6 @@ export function Count() {
 export default memo(Count);
 ```
 
+## 注意
+
+当前的`React-store`是版本1的，开发版本2的原因是，使用方式还是不够简洁，代码也不够精简优雅，typescript类型提示也不完全。
